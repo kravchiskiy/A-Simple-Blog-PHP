@@ -1,0 +1,32 @@
+# Dependency directories
+# Never commit your vendor folder; it's managed via composer.json
+/vendor/
+
+# Environment files
+# Keep sensitive credentials (DB passwords, API keys) out of Git
+.env
+.env.local
+.env.*.local
+config.php
+
+# Build artifacts and caches
+composer.phar
+.php-cs-fixer.cache
+.phpunit.result.cache
+
+# Logs
+*.log
+
+# Editor/IDE specific files
+.idea/
+.vscode/
+*.swp
+*.sublime-project
+*.sublime-workspace
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+
+/html-files
