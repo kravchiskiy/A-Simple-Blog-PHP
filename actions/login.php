@@ -1,6 +1,6 @@
 <?php
 /**
- * @var $mysqli
+ * @var $pdo
  */
 $error = '';
 if (count($_POST) > 0) {
@@ -8,13 +8,15 @@ if (count($_POST) > 0) {
     $login = $_POST['login'] ?? null;
     $password = $_POST['password'] ?? null;
 
-    $result = $mysqli->query("SELECT * from user where email='" . $login . "'");
+    $result = $pdo->prepare("SELECT * from user where email= :email");
+    $result->execute([$login]);
 
-    $user = $result->fetch_assoc();
+    $user = $result->fetch();
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['userId'] = $user['id'];
-        header('Location: /?act=profile');
-        die();
+//        header('Location: /?act=profile');
+//        die();
+        redirect('/?act=profile');
     } else {
         $error = 'user is not found';
     }

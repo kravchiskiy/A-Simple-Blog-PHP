@@ -1,13 +1,14 @@
 <?php
 /**
- * @var $mysqli
+ * @var $pdo
  */
-$user = checkUser($mysqli);
+$user = checkUser($pdo);
 
 $articleId = $_GET['id'] ?? null;
 if (!$articleId) {
-    header('Location: /?act=articles');
-    die();
+//    header('Location: /?act=articles');
+//    die();
+    redirect('/?act=articles');
 }
 
 
@@ -19,22 +20,40 @@ if (count($_POST)) {
     if ($_FILES['file']['size']) {
         $filename = upload();
         $sql = "img='" . $filename . "', ";
-        $article = getUserArticle($mysqli, $articleId, $user['id']);
+        $article = getUserArticle($pdo, $articleId, $user);
         @unlink($_SERVER['DOCUMENT_ROOT'] . '/images/' . $article['img']);
-//        var_dump($sql);
-//        var_dump($filename);
-//        exit;
     }
-    $mysqli->query("UPDATE article SET ".$sql." userId = '" . $user['id'] . "', title = '" . $title . "',content = '" . $content . "' WHERE id = '" . $articleId . "' AND userId = '" . $user['id'] . "'");
+    if($user['isAdmin']===1){
+        $stmt = $pdo->prepare("UPDATE article SET ".$sql." title = :title, content = :content WHERE id = :articleId ");
+        $stmt->execute([$title, $content, $articleId]);
+        redirect('/?act=adminArticles');
+    }else{
+        $stmt = $pdo->prepare("UPDATE article SET ".$sql." title = :title, content = :content WHERE id = :articleId AND userId = :user_id ");
+        $stmt->execute([$title, $content, $articleId, $user['id']]);
+//        $stmt->fetch();
+        redirect('/?act=articles');
+    }
+
+//    $stmt->fetch();
 //    var_dump($mysqli->query("UPDATE article SET ".$sql.", userId = '" . $user['id'] . "', title = '" . $title . "',content = '" . $content . "' WHERE id = '" . $articleId . "' AND userId = '" . $user['id'] . "'"));
 
-    header('Location: /?act=articles');
-    die();
+//    header('Location: /?act=articles');
+//    die();
+
 }
-$articleRes = $mysqli->query("SELECT * from article where id='" . $articleId . "' AND userId = '" . $user['id'] . "' LIMIT 1");
-$article = $articleRes->fetch_assoc();
+
+if($user['isAdmin']){
+    $articleRes = $pdo->prepare("SELECT * from article where id=:articleId LIMIT 1");
+    $articleRes->execute([$articleId]);
+}else{
+    $articleRes = $pdo->prepare("SELECT * from article where id=:articleId AND userId = :user_id LIMIT 1");
+    $articleRes->execute([$articleId, $user['id']]);
+}
+
+$article = $articleRes->fetch();
 if (!$article) {
-    header('Location: /?act=articles');
-    die();
+//    header('Location: /?act=articles');
+//    die();
+    redirect('/?act=articles');
 }
 require_once 'templates/edit.php';

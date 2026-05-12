@@ -1,5 +1,11 @@
 <?php
-function checkUser($mysqli): array
+function redirect(string $uri): void
+{
+    header('Location: ' . $uri);
+    die();
+}
+
+function checkUser($pdo): array
 {
 
     if (empty($_SESSION['userId'])) {
@@ -7,8 +13,9 @@ function checkUser($mysqli): array
         die();
     }
     $userId = (int)$_SESSION['userId'];
-    $result = $mysqli->query("SELECT * from user where id='" . $userId . "' LIMIT 1");
-    $user = $result->fetch_assoc();
+    $result = $pdo->prepare("SELECT * from user where id=:user_id LIMIT 1");
+    $result->execute([$userId]);
+    $user = $result->fetch();
 
     if (!$user) {
         header('Location: /?act=login');
@@ -16,11 +23,39 @@ function checkUser($mysqli): array
     }
     return $user;
 }
-
-function getUserArticle($mysqli, int $articleId, int $userId): array
+function getUser($pdo): array
 {
-    $articleRes = $mysqli->query("SELECT * from article where id='" . $articleId . "' AND userId='" . $userId . "'");
-    $article = $articleRes->fetch_assoc();
+
+//    if (empty($_SESSION['userId'])) {
+//        header('Location: /?act=login');
+//        die();
+//    }
+
+    $userId = (int)($_SESSION['userId'] ?? null);
+    if(!$userId){
+        return [];
+    }
+    $result = $pdo->prepare("SELECT * from user where id=:user_id LIMIT 1");
+    $result->execute([$userId]);
+    $user = $result->fetch();
+
+    if (!$user) {
+        return [];
+    }
+    return $user;
+}
+
+function getUserArticle($pdo, int $articleId, array $user): array
+{
+    if($user['isAdmin']===1){
+        $articleRes = $pdo->prepare("SELECT * from article where id=:article_id ");
+        $articleRes->execute([$articleId]);
+    } else{
+        $articleRes = $pdo->prepare("SELECT * from article where id=:article_id AND userId=:user_id");
+        $articleRes->execute([$articleId, $user['id']]);
+    }
+
+    $article = $articleRes->fetch();
     if (!$article) {
         header('Location: /?act=articles');
         die();
@@ -60,7 +95,7 @@ function upload(): string
 //    imagecopy($dest, $src, 0, 0, 0, 0, $width, $height);
     $filename = pathinfo($_FILES['file']['name'], PATHINFO_FILENAME) . "-" . time() . "." . $ext;
     $fullFilename = $_SERVER['DOCUMENT_ROOT'] . "/images/" . $filename;
-    var_dump($filename);
+//    var_dump($filename);
 
     switch ($mime) {
         case 'image/jpeg':

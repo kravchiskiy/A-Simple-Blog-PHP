@@ -1,8 +1,8 @@
 <?php
 /**
- * @var $mysqli
+ * @var $pdo
  */
-$user = checkUser($mysqli);
+$user = checkUser($pdo);
 
 
 if(count($_POST)){
@@ -12,8 +12,13 @@ if(count($_POST)){
     $phone = $_POST['phone'] ?? null;
 //    var_dump($_POST);
 //    die();
-    $mysqli->query("UPDATE user SET name = '".$name."',surname = '".$surname."', phone ='".$phone."', about='".$about."' WHERE id='" . $user['id'] . "'");
-    header('Location: /?act=profile');
-    die();
+
+//    $stmt = $pdo->prepare("UPDATE user SET name = '".$name."',surname = '".$surname."', phone ='".$phone."', about='".$about."' WHERE id='" . $user['id'] . "'");
+    $stmt = $pdo->prepare("UPDATE user SET name = :name,surname = :surname, phone =:phone, about=:about WHERE id= :user_id");
+    $stmt->execute([$name,$surname,$phone,$about, $user['id']]);
+    $stmt->fetch();
+//    header('Location: /?act=profile');
+//    die();
+    redirect('/?act=profile');
 }
 require_once 'templates/profile.php';
