@@ -1,5 +1,6 @@
 <?php
 $routers = [
+    'index'=>'actions/index',
     'register' => 'actions/register.php',
     'logout' => 'actions/logout.php',
     'login' => 'actions/login.php',

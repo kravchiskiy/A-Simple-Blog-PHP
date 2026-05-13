@@ -15,10 +15,7 @@ if (count($_POST)) {
     } elseif (!$title || !$content) {
         $error = 'Missing parameters content';
     } else {
-        var_dump('else');
-
         $filename = upload();
-
         $stmt = $pdo->prepare("INSERT INTO article SET img=:filename, userId = :user_id, title = :title,content = :content, createdAt = NOW()");
         $stmt->execute([$filename, $user['id'], $title, $content]);
         redirect('/?act=articles');

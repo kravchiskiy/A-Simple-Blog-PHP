@@ -1,4 +1,5 @@
 <?php
+//var_dump();
 //Отладка, обработки ошибок
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -6,9 +7,9 @@ ini_set('display_errors', 1);
 //ini_set('display_errors', 0);//для прода
 
 session_start();
-require_once 'config/config.php';
-require_once 'config/router.php';
-require_once 'functions/helpers.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/config/router-admin.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/functions/helpers.php';
 
 $host = '127.0.0.1';
 $db = 'edu-blog';
@@ -26,16 +27,18 @@ $options = [
 $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=$charset;port=$port";
 $pdo = new \PDO($dsn, DB_USER, DB_PASS, $options);
 
-//$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-//Можно заменить на $_REQUEST
-if (isset($_REQUEST['act']) && !empty($routers[$_REQUEST['act']])) {
-
-    require_once $routers[$_REQUEST['act']];
+/**
+ * @var $pdo
+ */
+$user = checkAdminUser($pdo);
+if (isset($_REQUEST['act']) && !empty($routersAdmin[$_REQUEST['act']])) {
+    require_once $routersAdmin[$_REQUEST['act']];
+//    var_dump($routersAdmin[$_REQUEST['act']]);
+//    var_dump($_REQUEST['act']);
 
     die();
 } else {
-//    require_once $routers['index'];
-    require_once 'actions/index.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/actions/admin/index.php';
 }
 
 

@@ -44,7 +44,14 @@ function getUser($pdo): array
     }
     return $user;
 }
-
+function checkAdminUser($pdo): array
+{
+    $user = checkuser($pdo);
+    if($user['isAdmin'] != 1){
+        redirect('/?act=login');
+    }
+    return $user;
+}
 function getUserArticle($pdo, int $articleId, array $user): array
 {
     if($user['isAdmin']===1){

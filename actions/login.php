@@ -10,13 +10,18 @@ if (count($_POST) > 0) {
 
     $result = $pdo->prepare("SELECT * from user where email= :email");
     $result->execute([$login]);
-
     $user = $result->fetch();
+
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['userId'] = $user['id'];
 //        header('Location: /?act=profile');
 //        die();
-        redirect('/?act=profile');
+        if($user['isAdmin']==1){
+            redirect('/admin');
+        }else{
+            redirect('/?act=articles');
+        }
+
     } else {
         $error = 'user is not found';
     }
